@@ -1,0 +1,54 @@
+<html>
+	<head>
+		<link rel="stylesheet" type="text/css" href="css/app.css">
+		<link rel="stylesheet" type="text/css" href="css/bootstrap.css">
+		<script type="text/javascript" src="js/angular.min.js"></script>
+		<script type="text/javascript" src="js/ui-bootstrap.min.js"></script>
+		<script type="text/javascript" src="js/app.js"></script>
+	</head>
+	<body>
+		<div ng-app="app" class="app">
+			<div ng-controller="appCtrl">
+				<div class="row">
+					<div class="col-md-8">
+						<div class="panel panel-default documents-panel">
+						  	<div class="panel-heading">
+						  		<div>
+						    		<h3 class="panel-title">Documents</h3>
+						  		</div>
+						    	<div class="panel-tools">
+						    		<input type="text" ng-model="search.text" placeholder="Search Documents...">
+						    	</div>
+						  	</div>
+						  	<div class="panel-body">
+						  		<img ng-if="!home.loaded" ng-src="img/loading-bar.gif" class="loading-bar"/>
+						    	<div ng-if="home.loaded" class="document" ng-repeat="doc in home.documents | filter:search.text track by $index">
+						    		<div class="title">
+						    			<span class="glyphicon glyphicon-file"></span>
+						    			<span ng-bind="doc.name"></span>
+						    		</div>
+						    		<ul class="info">
+						    			<li>Selected Date: <span ng-bind="doc.date | date:'longDate'"></span></li>
+						    			<li>Created: <span ng-bind="doc.created | date:'longDate'"></span></li>
+						    			<li ng-bind="doc.description"></li>
+						    		</ul>
+						    		<button type="button" class="btn btn-danger delete" ng-click="home.deleteDoc(doc);">Delete</button>
+						    	</div>
+						  	</div>
+						</div>
+					</div>
+					<div class="col-md-4">
+						<div class="panel panel-default actions-panel">
+						  	<div class="panel-heading">
+						    	<h3 class="panel-title">Actions</h3>
+						  	</div>
+						  	<div class="panel-body">
+						    	<button ng-if="home.loaded" type="button" class="btn btn-success" ng-click="home.openForm();">New Document</button>
+						  	</div>
+						</div>
+					</div>
+				</div>
+			</div>
+		</div>
+	</body>
+</html>

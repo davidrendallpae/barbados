@@ -1,0 +1,41 @@
+.nav, .pagination, .carousel, .panel-title a {
+	cursor: pointer;
+}
+.app{
+	margin:200px;
+}
+.loading-bar{
+	width:30%;
+}
+.document{
+	position:relative;padding:10px;cursor:pointer;margin-bottom:5px;border-bottom:1px solid black;
+	transition: all .5s ease-in-out; -ms-transition: all .5s ease-in-out; -webkit-transition: all .5s ease-in-out; -moz-transition: all .5s ease-in-out;
+}
+.document:hover{
+	background:rgba(0,0,0,0.1);
+	transform: scale(1.05); -ms-transform: scale(1.05); -webkit-transform: scale(1.05); -moz-transform: scale(1.05);
+}
+.document .title{
+	font-size:1.1em; font-weight:bold;
+}
+.document .info{
+	margin-left:30px;padding-top:5px;
+}
+.panel-heading > div{
+	display:inline-block;
+}
+.panel-tools{
+	float:right;
+}
+form.ng-submitted .ng-invalid{
+	border: 1px solid red;
+}
+form.ng-submitted.ng-invalid .ng-valid{
+	border:1px solid lime;
+}
+.document .delete{
+	position:absolute;bottom:0px;right:0px;margin:10px;visibility:hidden;
+}
+.document:hover .delete{
+	visibility: visible;
+}
