@@ -1,6 +1,6 @@
 
 
-<div id="page-wrapper" style="margin:1px; height: 80%; ">
+<div id="modDetail" style="margin:1px; height: 80%; ">
     <div>
         <div class="row">
             <div class="col-lg-12">
@@ -10,23 +10,23 @@
             <div class="col-lg-12">
                 <div class="panel panel-default">
                     <div class="panel-heading">
-                        Shipment Details
+                        License Application Form
                     </div>
                     <div class="panel-body">
                         <div class="row">
-                            <div class="col-lg-6" id="divShipingForm">
+                            <div class="col-lg-6" id="divLicenseForm">
                                 <div class="form-group">
-                                    <label>ShippingID *</label>
-                                    <input class="form-control" ng-model="vm.ShipmentTemplate.ShippingID" placeholder="Enter ShippingID">
+                                    <label>EIN *</label>
+                                    <input class="form-control" ng-model="vm.LicenseTemplate.LicenseID" ng-disabled="vm.LicenseID_disabled" placeholder="Enter EIN">
                                 </div>
                                 <div class="form-group">
-                                    <label>ConveyanceName *</label>
-                                    <input class="form-control" ng-model="vm.ShipmentTemplate.ConveyanceName" placeholder="Enter Conveyance Name">
+                                    <label>Applicant Name *</label>
+                                    <input class="form-control" ng-model="vm.LicenseTemplate.ApplicantName" ng-disabled="vm.IsViewMode" placeholder="Enter Applicant Name">
                                 </div>
 
                                 <div class="form-group">
                                     <label>Country *</label>
-                                    <select ng-model="vm.ShipmentTemplate.Country" ng-change="vm.Filter_onChange('ddlCountry');" id="ddlCountry" class="form-control" style="width: 100%">
+                                    <select ng-model="vm.LicenseTemplate.Country" ng-disabled="vm.IsViewMode" ng-change="vm.Filter_onChange('ddlCountry');" id="ddlCountry" class="form-control" style="width: 100%">
                                         <option value="0">Select Country</option>
                                         <option ng-repeat="myItemList in vm.LocationList | filter:{ parentID: '0' } "
                                                 value="{{myItemList.id}}" title="{{myItemList.name}}">
@@ -37,7 +37,7 @@
 
                                 <div class="form-group">
                                     <label>State *</label>
-                                    <select ng-model="vm.ShipmentTemplate.State" id="ddlState" class="form-control" style="width: 100%">
+                                    <select ng-model="vm.LicenseTemplate.State" ng-disabled="vm.IsViewMode" id="ddlState" class="form-control" style="width: 100%">
                                         <option value="0">Select State</option>
                                         <option data-ng-repeat="myItemList in vm.LocationList | filter:{ active: 'true' } " value="{{myItemList.id}}"
                                                 title="{{myItemList.name}}">
@@ -46,13 +46,13 @@
                                     </select>
                                 </div>
                                 <div class="form-group">
-                                    <label>Arrival Date *</label>
-                                    <input class="form-control" readonly="readonly" ng-model="vm.ShipmentTemplate.ArrivalDate;" placeholder="Enter Date of Arrival" my-datepicker>
+                                    <label>Apply Date *</label>
+                                    <input class="form-control" readonly="readonly" ng-disabled="vm.IsViewMode" ng-model="vm.LicenseTemplate.ApplyDate;" placeholder="Enter Date of Apply" my-datepicker>
                                 </div>
                                 <div>
-                                    <button type="submit" ng-click="vm.saveTemplate();" class="btn btn-primary">Submit Button</button>
-                                    <!--<button type="reset" ng-click="vm.resetTemplate();" class="btn btn-primary">Reset Button</button>-->
-                                    <button type="button" ng-click="vm.cancelTemplate();" class="btn btn-primary">Cancel Button</button>
+                                    <button type="submit" ng-hide="vm.IsViewMode" ng-click="vm.saveTemplate();" class="btn btn-primary">Submit</button>
+                                   
+                                    <button type="button" ng-hide="vm.IsViewMode"  ng-click="vm.cancelTemplate();" class="btn btn-primary">Cancel</button>
                                 </div>
                                 <div style="color:red;margin-top:5px;font-weight:normal;font-size:13px;">
                                     <label>{{vm.ErrorMessage}}</label>
