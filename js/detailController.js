@@ -9,34 +9,39 @@ define(['app'], function (app) {
         $timeout, authService, dataService, modalService) {
 
         //REQUIRED: DEFINED CLASS STRUCTURE FOR FORM - WE NEED THIS TO KNOW WHAT TO EXPECT. 
-        var ShipmentTemplateClass = {
-            ShippingID: "",
-            ConveyanceName: "",
+        var LicenseTemplateClass = {
+            UniqueID: "",
+            LicenseID: "",
+            ApplicantName: "",
             Country: "",
             State: "",
-            ArrivalDate: "",
+            ApplyDate: "",
             ErrorMessage: "",
             CountryName: "",  // optional
-            StateName: ""  // optional
+            StateName: "",  // optional
+            Status: "",
+            ActionRemarks:""
             
         }
         var vm = this;
 
-        vm.savelocked = 0;
+        vm.LicenseID_disabled = false; //UI
+
+        vm.IsViewMode = false; //UI
 
         //SETTING  THE VARIABLES 
         vm.LocationList = [];
-        vm.ShipmentTemplate = angular.copy(ShipmentTemplateClass);
+        vm.LicenseTemplate = angular.copy(LicenseTemplateClass);
 
         //BUSINESS LOGIC ON CHANGE OF COUNTRY FILTER
         vm.Filter_onChange = function (id) {
             try {
                 
                 if (id == "ddlCountry") {
-                    vm.ShipmentTemplate.State = "0";
+                    vm.LicenseTemplate.State = "0";
                     for (var k = 0; k < vm.LocationList.length; k++) {
-                        vm.LocationList[k].active = (vm.ShipmentTemplate.Country == "0" ? "false"
-                            : String(vm.LocationList[k].parentID == vm.ShipmentTemplate.Country));
+                        vm.LocationList[k].active = (vm.LicenseTemplate.Country == "0" ? "false"
+                            : String(vm.LocationList[k].parentID == vm.LicenseTemplate.Country));
                     }
                 }
             }
@@ -45,40 +50,49 @@ define(['app'], function (app) {
             }
         }
 
+        //Getting data from parent form and setting the mode of child form to open
         $scope.$on('on_Parentsubmit', function (event, data)
         {
-            
             if (data.type == "new") {
                 vm.resetTemplate(); // RESETTING THE OBJEC TO BLANK
+                return;
             }
             else if (data.type == "edit") {
-                vm.savelocked = 1;
-                vm.ShipmentTemplate.ShippingID = data.value.ShippingID;
-                vm.ShipmentTemplate.ConveyanceName = data.value.ConveyanceName;
-                vm.ShipmentTemplate.ArrivalDate = data.value.ArrivalDate;
-                vm.ShipmentTemplate.Country = data.value.Country;
-                vm.ShipmentTemplate.State = data.value.State;
-                vm.ShipmentTemplate.CountryName = data.value.CountryName;
-                vm.ShipmentTemplate.StateName = data.value.StateName;
-                vm.ErrorMessage = "";
+                vm.LicenseID_disabled = true;
+                vm.IsViewMode = false;
             }
-            //alert("parent submitted successfully");
+            else if (data.type == "view") {
+                vm.LicenseID_disabled = true;
+                vm.IsViewMode = true;
+            }
+            vm.LicenseTemplate.UniqueID = data.value.UniqueID;
+            vm.LicenseTemplate.Status = data.value.Status;
+            vm.LicenseTemplate.ActionRemarks = data.value.ActionRemarks;
+            vm.LicenseTemplate.LicenseID = data.value.LicenseID;
+            vm.LicenseTemplate.ApplicantName = data.value.ApplicantName;
+            vm.LicenseTemplate.ApplyDate = data.value.ApplyDate;
+            vm.LicenseTemplate.Country = data.value.Country;
+            vm.LicenseTemplate.State = data.value.State;
+            vm.LicenseTemplate.CountryName = data.value.CountryName;
+            vm.LicenseTemplate.StateName = data.value.StateName;
+            vm.ErrorMessage = "";
         });
 
         vm.cancelTemplate = function()
         {
             //THIS SENDS THE OBJECT TO THE PARENT FOR PROCESSING
-            $rootScope.$broadcast('on_submit', { key: 'shipments', value: null, type:"cancel" });
+            $rootScope.$broadcast('on_submit', { key: 'Licenses', value: null, type:"cancel" });
             vm.resetTemplate(); // RESETTING THE OBJEC TO BLANK
         }
        
         //PERFORMING THE SAVING
         vm.saveTemplate = function (id) {
 
-            if(vm.savelocked == 1) return;
+            //if(vm.savelocked == 1) return;
             //VALIDATIONS OR BUSINESS LOGIC STARTS HERE
+            // Validation can be writtern in either way using Angular tag or jquery etc
             vm.ErrorMessage = "";
-            var arr = $("#divShipingForm input:text");
+            var arr = $("#modDetail input:text");
             var iserror = 0;
             for (var i = 0 ; i < arr.length ; i++) {
                 $(arr[i]).parent().attr("class", "form-group");
@@ -88,12 +102,12 @@ define(['app'], function (app) {
                 }
             }
             $("#ddlCountry").parent().attr("class", "form-group");
-            if (vm.ShipmentTemplate.Country == "0") {
+            if (vm.LicenseTemplate.Country == "0") {
                 $("#ddlCountry").parent().attr("class", "form-group has-error");
                 iserror++;
             }
             $("#ddlState").parent().attr("class", "form-group");
-            if (vm.ShipmentTemplate.State == "0") {
+            if (vm.LicenseTemplate.State == "0") {
                 $("#ddlState").parent().attr("class", "form-group has-error");
                 iserror++;
             }
@@ -102,32 +116,13 @@ define(['app'], function (app) {
                 return;
             }
             if (iserror <= 0) {
-                if (IsNumber(vm.ShipmentTemplate.ShippingID) == false) {
+                if (IsNumber(vm.LicenseTemplate.LicenseID) == false) {
                     for (var i = 0 ; i < arr.length ; i++) {
                         $(arr[i]).parent().attr("class", "form-group");
-                        if ($(arr[i]).val() == vm.ShipmentTemplate.ShippingID) {
+                        if ($(arr[i]).val() == vm.LicenseTemplate.LicenseID) {
                             $(arr[i]).parent().attr("class", "form-group has-error");
                             iserror++;
-                            vm.ErrorMessage = "ShippingID must be Numeric";
-                            return;
-                        }
-                    }
-                    iserror++;
-                }
-                var curdate = new Date();
-                curdate = curdate.getFullYear() + "/" + formatnum(curdate.getMonth() + 1) + "/" + formatnum(curdate.getDate()) + " "
-                     + formatnum(curdate.getHours()) + ":" + formatnum(curdate.getMinutes());
-                curdate = new Date(curdate);
-                if (vm.ShipmentTemplate.ArrivalDate < curdate) {
-                    var arrivaldate = vm.ShipmentTemplate.ArrivalDate;
-                    arrivaldate = arrivaldate.getFullYear() + "/" + formatnum(arrivaldate.getMonth() + 1) + "/" + formatnum(arrivaldate.getDate()) + " "
-                       + formatnum(arrivaldate.getHours()) + ":" + formatnum(arrivaldate.getMinutes());
-                    for (var i = 0 ; i < arr.length ; i++) {
-                        $(arr[i]).parent().attr("class", "form-group");
-                        if ($(arr[i]).val() == arrivaldate) {
-                            $(arr[i]).parent().attr("class", "form-group has-error");
-                            iserror++;
-                            vm.ErrorMessage = "Arrival Date should be greater than current date";
+                            vm.ErrorMessage = "EIN must be Numeric";
                             return;
                         }
                     }
@@ -144,21 +139,21 @@ define(['app'], function (app) {
             document.body.style.cursor = 'wait';
             try {
                 for (var i = 0 ; i < vm.LocationList.length ; i++) {
-                    if (vm.LocationList[i].id == vm.ShipmentTemplate.Country) {
-                        vm.ShipmentTemplate.CountryName = vm.LocationList[i].name;
+                    if (vm.LocationList[i].id == vm.LicenseTemplate.Country) {
+                        vm.LicenseTemplate.CountryName = vm.LocationList[i].name;
                         continue;
                     }
-                    if (vm.LocationList[i].id == vm.ShipmentTemplate.State) {
-                        vm.ShipmentTemplate.StateName = vm.LocationList[i].name;
+                    if (vm.LocationList[i].id == vm.LicenseTemplate.State) {
+                        vm.LicenseTemplate.StateName = vm.LocationList[i].name;
                         continue;
                     }
                 }
 
                 //Saving starts
-                var objdata = angular.copy(vm.ShipmentTemplate); // COPYING THE DATA TO OTHER OBJECT
+                var objdata = angular.copy(vm.LicenseTemplate); // COPYING THE DATA TO OTHER OBJECT
 
                 //THIS SENDS THE OBJECT TO THE PARENT FOR PROCESSING
-                $rootScope.$broadcast('on_submit', { key: 'shipments', value: objdata, type: "save" });
+                $rootScope.$broadcast('on_submit', { key: 'Licenses', value: objdata, type: "save" });
                 vm.resetTemplate(); // RESETTING THE OBJEC TO BLANK
 
                 //Saving ends
@@ -173,18 +168,22 @@ define(['app'], function (app) {
 
         //RESETTING ALL VARIABLES TO EMPTY
         vm.resetTemplate = function () {
-            vm.savelocked = 0;
-            vm.ShipmentTemplate.ShippingID = "";
-            vm.ShipmentTemplate.ConveyanceName = "";
-            vm.ShipmentTemplate.ArrivalDate = "";
-            vm.ShipmentTemplate.Country = "0";
-            vm.ShipmentTemplate.State = "0";
-            vm.ShipmentTemplate.CountryName = "0";
-            vm.ShipmentTemplate.StateName = "0";
+            vm.LicenseID_disabled = false;
+            vm.IsViewMode = false;
+            vm.LicenseTemplate.UniqueID = "";
+            vm.LicenseTemplate.Status = "";
+            vm.LicenseTemplate.ActionRemarks = "";
+            vm.LicenseTemplate.LicenseID = "";
+            vm.LicenseTemplate.ApplicantName = "";
+            vm.LicenseTemplate.ApplyDate = "";
+            vm.LicenseTemplate.Country = "0";
+            vm.LicenseTemplate.State = "0";
+            vm.LicenseTemplate.CountryName = "0";
+            vm.LicenseTemplate.StateName = "0";
             vm.ErrorMessage = "";
             $("#ddlCountry").parent().attr("class", "form-group");
             $("#ddlState").parent().attr("class", "form-group");
-            var arr = $("#divShipingForm input:text");
+            var arr = $("#modDetail input:text");
             var iserror = 0;
             for (var i = 0 ; i < arr.length ; i++) {
                 $(arr[i]).parent().attr("class", "form-group");
@@ -197,12 +196,12 @@ define(['app'], function (app) {
         function init()
         {
             vm.resetTemplate();
-            getMastetLookup();
+            GetLookupData();
         }
 
         //FETCHING THE LOOKUP FROM DATA SERVICE TO FILL COUNTRY AND STATES
-        function getMastetLookup() {
-            dataService.getMastetLookup('getMastetLookup', 'locations')
+        function GetLookupData() {
+            dataService.getLookup('getMasterLookup', 'locations')
             .then(function (data) {
                 vm.LocationList = data.results;
 
@@ -221,9 +220,7 @@ define(['app'], function (app) {
         function IsNumber(num) {
             return !isNaN(parseFloat(num)) && isFinite(num);
         }
-        function formatnum(num) {
-            return String(num).length <= 1 ? "0" + String(num) : num;
-        }
+       
 
        
     };
@@ -232,6 +229,5 @@ define(['app'], function (app) {
 
     app.register.controller('DetailController', DetailController);
    
-    //
 
 });
