@@ -3,45 +3,35 @@
 define(['app'], function (app) {
 
     var injectParams = ['$rootScope','$q','$scope', '$location', '$filter', '$window',
-                      '$timeout', 'authService', 'dataService', 'modalService'];
+                      '$timeout', 'authService', 'dataService', 'modalService', '$routeParams'];
 
     var DetailController = function ($rootScope,$q, $scope, $location, $filter, $window,
-        $timeout, authService, dataService, modalService) {
+        $timeout, authService, dataService, modalService, $routeParams) {
 
-        //REQUIRED: DEFINED CLASS STRUCTURE FOR FORM - WE NEED THIS TO KNOW WHAT TO EXPECT. 
-        var LicenseTemplateClass = {
-            UniqueID: "",
-            LicenseID: "",
-            ApplicantName: "",
-            Country: "",
-            State: "",
-            ApplyDate: "",
-            ErrorMessage: "",
-            CountryName: "",  // optional
-            StateName: "",  // optional
-            Status: "",
-            ActionRemarks:""
-            
-        }
+        
         var vm = this;
 
-        vm.LicenseID_disabled = false; //UI
+        //GET PARAMETERS ON LOAD. THESE WILL BE USED TO PULL THE CORRECT FORM DATA 
+        var uniqueid = $scope.params.Id;
+        var openmode = $scope.params.openmode;
 
-        vm.IsViewMode = false; //UI
-
-        //SETTING  THE VARIABLES 
+        //SETTING  THE VARIABLES  
+        vm.data; //Handles all data. Please do not change variable name 'data' 
+				 //On creation and configuration of workflow, all elements will be created and associated with form. 
         vm.LocationList = [];
-        vm.LicenseTemplate = angular.copy(LicenseTemplateClass);
+        vm.ein_disabled = false; //UI enable/disable variable
+       
 
         //BUSINESS LOGIC ON CHANGE OF COUNTRY FILTER
         vm.Filter_onChange = function (id) {
             try {
-                
                 if (id == "ddlCountry") {
-                    vm.LicenseTemplate.State = "0";
-                    for (var k = 0; k < vm.LocationList.length; k++) {
-                        vm.LocationList[k].active = (vm.LicenseTemplate.Country == "0" ? "false"
-                            : String(vm.LocationList[k].parentID == vm.LicenseTemplate.Country));
+                    vm.data.state = "0";
+                    
+                    for (var k = 0; k < vm.LocationList.length; k++)
+                    {
+                        vm.LocationList[k].active = (vm.data.country == "0" ? "false"
+                            : String(vm.LocationList[k].parentID == vm.data.country));
                     }
                 }
             }
@@ -50,48 +40,11 @@ define(['app'], function (app) {
             }
         }
 
-        //Getting data from parent form and setting the mode of child form to open
-        $scope.$on('on_Parentsubmit', function (event, data)
-        {
-            if (data.type == "new") {
-                vm.resetTemplate(); // RESETTING THE OBJEC TO BLANK
-                return;
-            }
-            else if (data.type == "edit") {
-                vm.LicenseID_disabled = true;
-                vm.IsViewMode = false;
-            }
-            else if (data.type == "view") {
-                vm.LicenseID_disabled = true;
-                vm.IsViewMode = true;
-            }
-            vm.LicenseTemplate.UniqueID = data.value.UniqueID;
-            vm.LicenseTemplate.Status = data.value.Status;
-            vm.LicenseTemplate.ActionRemarks = data.value.ActionRemarks;
-            vm.LicenseTemplate.LicenseID = data.value.LicenseID;
-            vm.LicenseTemplate.ApplicantName = data.value.ApplicantName;
-            vm.LicenseTemplate.ApplyDate = data.value.ApplyDate;
-            vm.LicenseTemplate.Country = data.value.Country;
-            vm.LicenseTemplate.State = data.value.State;
-            vm.LicenseTemplate.CountryName = data.value.CountryName;
-            vm.LicenseTemplate.StateName = data.value.StateName;
-            vm.ErrorMessage = "";
-        });
 
-        vm.cancelTemplate = function()
-        {
-            //THIS SENDS THE OBJECT TO THE PARENT FOR PROCESSING
-            $rootScope.$broadcast('on_submit', { key: 'Licenses', value: null, type:"cancel" });
-            vm.resetTemplate(); // RESETTING THE OBJEC TO BLANK
-        }
-       
-        //PERFORMING THE SAVING
-        vm.saveTemplate = function (id) {
-
-            //if(vm.savelocked == 1) return;
-            //VALIDATIONS OR BUSINESS LOGIC STARTS HERE
+        //PERFORMING THE VALIDATION: Should always return bool value . Please do not change function Name
+        vm.PreAction = function () {
             // Validation can be writtern in either way using Angular tag or jquery etc
-            vm.ErrorMessage = "";
+            vm.errorMessage = "";
             var arr = $("#modDetail input:text");
             var iserror = 0;
             for (var i = 0 ; i < arr.length ; i++) {
@@ -102,85 +55,99 @@ define(['app'], function (app) {
                 }
             }
             $("#ddlCountry").parent().attr("class", "form-group");
-            if (vm.LicenseTemplate.Country == "0") {
+
+            if (vm.data.country == "0") {
                 $("#ddlCountry").parent().attr("class", "form-group has-error");
                 iserror++;
             }
             $("#ddlState").parent().attr("class", "form-group");
-            if (vm.LicenseTemplate.State == "0") {
+            if (vm.data.state == "0") {
                 $("#ddlState").parent().attr("class", "form-group has-error");
                 iserror++;
             }
             if (iserror > 0) {
-                vm.ErrorMessage = "(*) Mandatory to fill";
+                vm.errorMessage = "(*) Mandatory to fill";
                 return;
             }
             if (iserror <= 0) {
-                if (IsNumber(vm.LicenseTemplate.LicenseID) == false) {
+                if (IsNumber(vm.data.ein) == false) {
                     for (var i = 0 ; i < arr.length ; i++) {
                         $(arr[i]).parent().attr("class", "form-group");
-                        if ($(arr[i]).val() == vm.LicenseTemplate.LicenseID) {
+                        if ($(arr[i]).val() == vm.data.ein) {
                             $(arr[i]).parent().attr("class", "form-group has-error");
                             iserror++;
-                            vm.ErrorMessage = "EIN must be Numeric";
+                            vm.errorMessage = "EIN must be Numeric";
                             return;
                         }
                     }
                     iserror++;
                 }
             }
+
+            //if (vm.data.myfile == "")
+            //{
+            //    vm.errorMessage = "No file Uploaded..!!";
+            //    return false;
+            //}
             if (iserror > 0) {
-                vm.ErrorMessage = "Errors in Form";
-                return;
+                vm.errorMessage = "Errors in Form";
+                return false;
             }
             //VALIDATIONS OR BUSINESS LOGIC ENDS HERE
 
-
-            document.body.style.cursor = 'wait';
-            try {
-                for (var i = 0 ; i < vm.LocationList.length ; i++) {
-                    if (vm.LocationList[i].id == vm.LicenseTemplate.Country) {
-                        vm.LicenseTemplate.CountryName = vm.LocationList[i].name;
-                        continue;
-                    }
-                    if (vm.LocationList[i].id == vm.LicenseTemplate.State) {
-                        vm.LicenseTemplate.StateName = vm.LocationList[i].name;
-                        continue;
-                    }
+            //optional - Updating the countryName with ID and same for state
+            for (var i = 0 ; i < vm.LocationList.length ; i++) {
+                if (vm.LocationList[i].id == vm.data.country) {
+                    vm.data.countryName = vm.LocationList[i].name;
+                    continue;
                 }
+                if (vm.LocationList[i].id == vm.data.state) {
+                    vm.data.stateName = vm.LocationList[i].name;
+                    continue;
+                }
+            }
+            //optional
+            return true;
+        }
 
-                //Saving starts
-                var objdata = angular.copy(vm.LicenseTemplate); // COPYING THE DATA TO OTHER OBJECT
-
-                //THIS SENDS THE OBJECT TO THE PARENT FOR PROCESSING
-                $rootScope.$broadcast('on_submit', { key: 'Licenses', value: objdata, type: "save" });
-                vm.resetTemplate(); // RESETTING THE OBJEC TO BLANK
-
-                //Saving ends
-                document.body.style.cursor = 'auto';
+        //PERFORMING THE POST ACTION: Parameter result will decide whether saving is successful or not. The [data] parameter will give you data after saving, if needed.
+        //Please do not change function Name
+        vm.PostAction = function (result,data) 
+        {
+            try {
+                if(result)
+                {
+                    alert("saved successfully.");
+                    document.body.style.cursor = 'auto';
+                }
+                else
+                {
+                    alert("error in saving!");
+                }
             }
             catch (x) {
                 alert(x.message);
                 document.body.style.cursor = 'auto';
             }
-
         }
 
+
         //RESETTING ALL VARIABLES TO EMPTY
-        vm.resetTemplate = function () {
-            vm.LicenseID_disabled = false;
-            vm.IsViewMode = false;
-            vm.LicenseTemplate.UniqueID = "";
-            vm.LicenseTemplate.Status = "";
-            vm.LicenseTemplate.ActionRemarks = "";
-            vm.LicenseTemplate.LicenseID = "";
-            vm.LicenseTemplate.ApplicantName = "";
-            vm.LicenseTemplate.ApplyDate = "";
-            vm.LicenseTemplate.Country = "0";
-            vm.LicenseTemplate.State = "0";
-            vm.LicenseTemplate.CountryName = "0";
-            vm.LicenseTemplate.StateName = "0";
-            vm.ErrorMessage = "";
+        //Please do not change function Name
+        vm.reset = function () {
+            vm.ein_disabled = false;
+            vm.data.uniqueID = "";
+            vm.data.status = "";
+            vm.data.actionRemarks = "";
+            vm.data.ein = "";
+            vm.data.applicantName = "";
+            vm.data.applyDate = "";
+            vm.data.myfile = "";
+            vm.data.country = "0";
+            vm.data.state = "0";
+            vm.data.countryName = "0";
+            vm.data.stateName = "0";
+            vm.errorMessage = "";
             $("#ddlCountry").parent().attr("class", "form-group");
             $("#ddlState").parent().attr("class", "form-group");
             var arr = $("#modDetail input:text");
@@ -190,44 +157,46 @@ define(['app'], function (app) {
             }
         }
               
-        //CALLING TO INITIALIZE THE FORMS VARIABLES AND FORM ITSELF
-        init();
-
-        function init()
-        {
-            vm.resetTemplate();
-            GetLookupData();
-        }
-
-        //FETCHING THE LOOKUP FROM DATA SERVICE TO FILL COUNTRY AND STATES
-        function GetLookupData() {
-            dataService.getLookup('getMasterLookup', 'locations')
-            .then(function (data) {
-                vm.LocationList = data.results;
-
-                // ENABLING THE UI - OPTIONAL
-                var def = $q.defer();
-                def.resolve(vm.LocationList);
-                return def.promise;
-                // ENABLING THE UI - OPTIONAL
-
+        //FETCH THE DATA FROM DATASERVICE TO BIND ALL CONTROLS. 
+        vm.GetData = function () {
+            dataService.getData('ImportLicenseFormInitial_v1.0', uniqueid).then(function (result)//IT RECEIVES ONLY FORM SPECIFIC 'JSON OBJECT STRUCTURE'
+            {
+                vm.data = angular.copy(result.data);  //SET DATA FROM SERVICE: i.e. GET FORM SPECIFIC 'JSON OBJECT STRUCTURE
+                if (openmode == "edit" || openmode == "view") {
+                    vm.ein_disabled = true;
+                    vm.Filter_onChange('ddlCountry');//OPTIONAL
+                }
+                else {
+                    vm.reset();
+                }
             }, function (error) {
                 $window.alert('Sorry, an error occurred: ' + error.data.message);
             });
         }
 
+        //FETCH THE LOOKUP FROM DATASERVICE TO FILL COUNTRY AND STATES
+        vm.GetLookupData = function () {
+            dataService.getLookup('getMasterLookup', 'locations')
+            .then(function (data) {
+                vm.LocationList = data.results;
+            },
+            function (error) {
+                $window.alert('Sorry, an error occurred: ' + error.data.message);
+            }
+            );
+        }
+
+      
+        vm.GetData(); //CALL TO INITIALIZE DATA        
+        vm.GetLookupData();//CALL TO INITIALIZE THE FORMS VARIABLES AND FORM ITSELF
+
 
         function IsNumber(num) {
             return !isNaN(parseFloat(num)) && isFinite(num);
         }
-       
-
-       
     };
 
     DetailController.$inject = injectParams;
 
-    app.register.controller('DetailController', DetailController);
-   
-
+    app.register.controller('DetailController', DetailController); 
 });
