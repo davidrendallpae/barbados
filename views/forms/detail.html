@@ -17,16 +17,16 @@
                             <div class="col-lg-6" id="divLicenseForm">
                                 <div class="form-group">
                                     <label>EIN *</label>
-                                    <input class="form-control" ng-model="vm.LicenseTemplate.LicenseID" ng-disabled="vm.LicenseID_disabled" placeholder="Enter EIN">
+                                    <input class="form-control" ng-model="vm.data.ein" ng-disabled="vm.ein_disabled" placeholder="Enter EIN">
                                 </div>
                                 <div class="form-group">
                                     <label>Applicant Name *</label>
-                                    <input class="form-control" ng-model="vm.LicenseTemplate.ApplicantName" ng-disabled="vm.IsViewMode" placeholder="Enter Applicant Name">
+                                    <input class="form-control" ng-model="vm.data.applicantName"  placeholder="Enter Applicant Name">
                                 </div>
 
                                 <div class="form-group">
                                     <label>Country *</label>
-                                    <select ng-model="vm.LicenseTemplate.Country" ng-disabled="vm.IsViewMode" ng-change="vm.Filter_onChange('ddlCountry');" id="ddlCountry" class="form-control" style="width: 100%">
+                                    <select ng-model="vm.data.country"  ng-change="vm.Filter_onChange('ddlCountry');" id="ddlCountry" class="form-control" style="width: 100%">
                                         <option value="0">Select Country</option>
                                         <option ng-repeat="myItemList in vm.LocationList | filter:{ parentID: '0' } "
                                                 value="{{myItemList.id}}" title="{{myItemList.name}}">
@@ -37,7 +37,7 @@
 
                                 <div class="form-group">
                                     <label>State *</label>
-                                    <select ng-model="vm.LicenseTemplate.State" ng-disabled="vm.IsViewMode" id="ddlState" class="form-control" style="width: 100%">
+                                    <select ng-model="vm.data.state"   id="ddlState" class="form-control" style="width: 100%">
                                         <option value="0">Select State</option>
                                         <option data-ng-repeat="myItemList in vm.LocationList | filter:{ active: 'true' } " value="{{myItemList.id}}"
                                                 title="{{myItemList.name}}">
@@ -45,20 +45,28 @@
                                         </option>
                                     </select>
                                 </div>
+
+                                <div class="form-group">
+                                    <label>File :</label><label>{{vm.data.myfile}}</label>
+                                    <br />
+                                    <span data-wf-upload wfdata="vm.data.myfile"></span> 
+                                </div>
                                 <div class="form-group">
                                     <label>Apply Date *</label>
-                                    <input class="form-control" readonly="readonly" ng-disabled="vm.IsViewMode" ng-model="vm.LicenseTemplate.ApplyDate;" placeholder="Enter Date of Apply" my-datepicker>
+                                    <input class="form-control" readonly="readonly"   ng-model="vm.data.applyDate;" placeholder="Enter Date of Apply" my-datepicker>
                                 </div>
                                 <div>
-                                    <button type="submit" ng-hide="vm.IsViewMode" ng-click="vm.saveTemplate();" class="btn btn-primary">Submit</button>
-                                   
-                                    <button type="button" ng-hide="vm.IsViewMode"  ng-click="vm.cancelTemplate();" class="btn btn-primary">Cancel</button>
+                                    <div>
+                                        <span data-wf-button wftitle="'Submit'" wftype="'submit'" wfdata="vm"></span>
+                                        <span data-wf-button wftitle="'Cancel'" wftype="'cancel'" wfdata="vm"></span> 
+                                    </div>
                                 </div>
                                 <div style="color:red;margin-top:5px;font-weight:normal;font-size:13px;">
-                                    <label>{{vm.ErrorMessage}}</label>
+                                    <label>{{vm.errorMessage}}</label>
                                 </div>
                             </div>
                         </div>
+                        
                     </div>
                 </div>
             </div>
