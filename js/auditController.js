@@ -10,22 +10,27 @@ define(['app'], function (app) {
         
         var vm = this;
 
-        vm.data = null;// Please do not change variable name 'data'
-        
-        //Getting data from parent form and setting the mode of child form to open
-        $scope.$on('on_Parentsubmit', function (event, data)
-        {
-            
-            if (data.type == "Licenses") {
-                vm.data = data.value;
-            }
-        });
-        
+        //getting parameters on loading 
+        var uniqueid = $scope.params.Id;
 
-        //PERFORMING THE Validatin etc,  should always return bool value . Please do not change function Name
+        vm.data = null;// Please do not change variable name 'data'
+
+        //FETCH THE DATA FROM DATASERVICE TO BIND ALL CONTROLS. 
+        //IT RECEIVES ONLY FORM SPECIFIC 'JSON OBJECT STRUCTURE'
+        vm.GetData = function () {
+            dataService.getData('ImportLicenseFormInitial_v1.0', uniqueid).then(function (result)
+            {
+                vm.data = angular.copy(result.data);  //SET DATA FROM SERVICE i.e. GETTING FORM SPECIFIC 'JSON OBJECT STRUCTURE
+            }, function (error) {
+                $window.alert('Sorry, an error occurred: ' + error.data.message);
+            });
+        }
+
+
+        //PERFORMING THE VALIDATION: Should always return bool value. Please do not change function Name
         vm.PreAction = function () {
-            // Validation can be writtern in either way using Angular tag or jquery etc
-            vm.data.ErrorMessage = "";
+            // Validation can be written in either way using Angular tag or jquery etc
+            vm.data.errorMessage = "";
             var arr = $("#modAudit input:text");
             var iserror = 0;
             for (var i = 0 ; i < arr.length ; i++) {
@@ -36,17 +41,18 @@ define(['app'], function (app) {
                 }
             }
             if (iserror > 0) {
-                vm.data.ErrorMessage = "(*) Mandatory to fill";
+                vm.data.errorMessage = "(*) Mandatory to fill";
                 return;
             }
             //VALIDATIONS OR BUSINESS LOGIC ENDS HERE
             return true;
         }
+
+        //CALLING TO INITIALIZE THE FORMS VARIABLES AND FORM ITSELF
+        vm.GetData();
     };
 
     AuditController.$inject = injectParams;
 
     app.register.controller('AuditController', AuditController);
-   
-
 });
